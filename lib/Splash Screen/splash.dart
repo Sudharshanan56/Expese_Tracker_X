@@ -1,3 +1,4 @@
+import 'package:expense_tracker_x/Authentication/signin.dart';
 import 'package:expense_tracker_x/Navigation/navigation.dart';
 import 'package:flutter/material.dart';
 
@@ -16,7 +17,7 @@ class _SplashScreenState extends State<SplashScreen> {
     Future.delayed(const Duration(seconds: 3), () {
       Navigator.of(
         context,
-      ).pushReplacement(MaterialPageRoute(builder: (_) => Navigation()));
+      ).pushReplacement(MaterialPageRoute(builder: (_) => SigninScreen()));
     });
   }
 
