@@ -166,91 +166,221 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  // Future<void> _showAddTransactionDialog(BuildContext context) async {
+  //   showDialog(
+  //     context: context,
+  //     builder: (context) {
+  //       return AlertDialog(
+  //         title: const Text("Add Transaction"),
+  //         content: Column(
+  //           mainAxisSize: MainAxisSize.min,
+  //           children: [
+  //             DropdownButtonFormField<String>(
+  //               value: selectedCategory,
+  //               hint: const Text("Select category"),
+  //               onChanged: (value) {
+  //                 setState(() {
+  //                   selectedCategory = value;
+  //                 });
+  //               },
+  //               items:
+  //                   categories.map((cat) {
+  //                     return DropdownMenuItem(value: cat, child: Text(cat));
+  //                   }).toList(),
+  //             ),
+  //             if (selectedCategory == "Other") ...[
+  //               const SizedBox(height: 10),
+  //               TextField(
+  //                 controller: customCategoryController,
+  //                 decoration: const InputDecoration(
+  //                   labelText: "Enter custom category",
+  //                 ),
+  //               ),
+  //             ],
+  //             const SizedBox(height: 10),
+  //             TextField(
+  //               controller: amountController,
+  //               keyboardType: TextInputType.number,
+  //               decoration: const InputDecoration(labelText: "Enter amount"),
+  //             ),
+  //           ],
+  //         ),
+  //         actions: [
+  //           TextButton(
+  //             onPressed: () => Navigator.pop(context),
+  //             child: const Text("Cancel"),
+  //           ),
+  //           ElevatedButton(
+  //             onPressed: () async {
+  //               final user = _auth.currentUser;
+  //               if (user == null) return;
+
+  //               String finalCategory = selectedCategory ?? "";
+  //               if (finalCategory == "Other") {
+  //                 finalCategory = customCategoryController.text.trim();
+  //               }
+
+  //               int amount = int.tryParse(amountController.text.trim()) ?? 0;
+
+  //               if (finalCategory.isEmpty || amount <= 0) {
+  //                 ScaffoldMessenger.of(context).showSnackBar(
+  //                   const SnackBar(content: Text("Please enter valid details")),
+  //                 );
+  //                 return;
+  //               }
+
+  //               await addTransaction(finalCategory, amount);
+
+  //               Navigator.pop(context);
+  //               setState(() {
+  //                 selectedCategory = null;
+  //                 customCategoryController.clear();
+  //                 amountController.clear();
+  //               });
+
+  //               ScaffoldMessenger.of(context).showSnackBar(
+  //                 const SnackBar(
+  //                   content: Text("Transaction added successfully"),
+  //                 ),
+  //               );
+  //             },
+  //             child: const Text("Save"),
+  //           ),
+  //         ],
+  //       );
+  //     },
+  //   );
+  // }
+  DateTime? selectedDate;
+
   Future<void> _showAddTransactionDialog(BuildContext context) async {
-    showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: const Text("Add Transaction"),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              DropdownButtonFormField<String>(
-                value: selectedCategory,
-                hint: const Text("Select category"),
-                onChanged: (value) {
-                  setState(() {
-                    selectedCategory = value;
-                  });
-                },
-                items:
-                    categories.map((cat) {
-                      return DropdownMenuItem(value: cat, child: Text(cat));
-                    }).toList(),
-              ),
-              if (selectedCategory == "Other") ...[
-                const SizedBox(height: 10),
-                TextField(
-                  controller: customCategoryController,
-                  decoration: const InputDecoration(
-                    labelText: "Enter custom category",
-                  ),
-                ),
-              ],
+  selectedDate = DateTime.now(); // default to today
+
+  showDialog(
+    context: context,
+    builder: (context) {
+      return AlertDialog(
+        title: const Text("Add Transaction"),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            DropdownButtonFormField<String>(
+              value: selectedCategory,
+              hint: const Text("Select category"),
+              onChanged: (value) {
+                setState(() {
+                  selectedCategory = value;
+                });
+              },
+              items: categories.map((cat) {
+                return DropdownMenuItem(value: cat, child: Text(cat));
+              }).toList(),
+            ),
+
+            if (selectedCategory == "Other") ...[
               const SizedBox(height: 10),
               TextField(
-                controller: amountController,
-                keyboardType: TextInputType.number,
-                decoration: const InputDecoration(labelText: "Enter amount"),
+                controller: customCategoryController,
+                decoration: const InputDecoration(
+                  labelText: "Enter custom category",
+                ),
               ),
             ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text("Cancel"),
+
+            const SizedBox(height: 10),
+            TextField(
+              controller: amountController,
+              keyboardType: TextInputType.number,
+              decoration: const InputDecoration(labelText: "Enter amount"),
             ),
-            ElevatedButton(
-              onPressed: () async {
-                final user = _auth.currentUser;
-                if (user == null) return;
 
-                String finalCategory = selectedCategory ?? "";
-                if (finalCategory == "Other") {
-                  finalCategory = customCategoryController.text.trim();
-                }
+            const SizedBox(height: 10),
 
-                int amount = int.tryParse(amountController.text.trim()) ?? 0;
-
-                if (finalCategory.isEmpty || amount <= 0) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text("Please enter valid details")),
-                  );
-                  return;
-                }
-
-                await addTransaction(finalCategory, amount);
-
-                Navigator.pop(context);
-                setState(() {
-                  selectedCategory = null;
-                  customCategoryController.clear();
-                  amountController.clear();
-                });
-
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text("Transaction added successfully"),
-                  ),
-                );
-              },
-              child: const Text("Save"),
+            // 📅 Date Picker
+            Row(
+              children: [
+                Text(
+                  selectedDate != null
+                      ? "Date: ${selectedDate!.day}/${selectedDate!.month}/${selectedDate!.year}"
+                      : "Pick a date",
+                ),
+                const Spacer(),
+                IconButton(
+                  icon: const Icon(Icons.calendar_today),
+                  onPressed: () async {
+                    final pickedDate = await showDatePicker(
+                      context: context,
+                      initialDate: selectedDate ?? DateTime.now(),
+                      firstDate: DateTime(2000),
+                      lastDate: DateTime(2100),
+                    );
+                    if (pickedDate != null) {
+                      setState(() {
+                        selectedDate = pickedDate;
+                      });
+                    }
+                  },
+                ),
+              ],
             ),
           ],
-        );
-      },
-    );
-  }
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text("Cancel"),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              final user = _auth.currentUser;
+              if (user == null) return;
+
+              String finalCategory = selectedCategory ?? "";
+              if (finalCategory == "Other") {
+                finalCategory = customCategoryController.text.trim();
+              }
+
+              int amount = int.tryParse(amountController.text.trim()) ?? 0;
+
+              if (finalCategory.isEmpty || amount <= 0) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text("Please enter valid details")),
+                );
+                return;
+              }
+
+              // ✅ Pass selectedDate instead of serverTimestamp
+              await _firestore
+                  .collection("users")
+                  .doc(uid)
+                  .collection("transactions")
+                  .add({
+                "category": finalCategory,
+                "amount": amount,
+                "timestamp": selectedDate ?? DateTime.now(),
+              });
+
+              Navigator.pop(context);
+              setState(() {
+                selectedCategory = null;
+                customCategoryController.clear();
+                amountController.clear();
+              });
+
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text("Transaction added successfully"),
+                ),
+              );
+            },
+            child: const Text("Save"),
+          ),
+        ],
+      );
+    },
+  );
+}
+
 
   // 🔹 Map category → icon
   IconData getCategoryIcon(String category) {
