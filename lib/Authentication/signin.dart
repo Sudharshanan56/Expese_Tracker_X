@@ -2,6 +2,7 @@ import 'package:expense_tracker_x/Authentication/signup.dart';
 import 'package:expense_tracker_x/Navigation/navigation.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class SigninScreen extends StatefulWidget {
   const SigninScreen({super.key});
@@ -11,6 +12,8 @@ class SigninScreen extends StatefulWidget {
 }
 
 class _SigninScreenState extends State<SigninScreen> {
+  bool isLoggedIn = false;
+
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
   final TextEditingController _emailController = TextEditingController();
@@ -26,9 +29,11 @@ class _SigninScreenState extends State<SigninScreen> {
         email: _emailController.text.trim(),
         password: _passwordController.text.trim(),
       );
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool('isLoggedIn', true);
       Navigator.push(
         context,
-        MaterialPageRoute(builder: (context) => const Navigation()),
+        MaterialPageRoute(builder: (context) => Navigation(isLoggedIn: true)),
       );
       ScaffoldMessenger.of(
         context,

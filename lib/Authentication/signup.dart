@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class SignupScreen extends StatefulWidget {
   const SignupScreen({super.key});
@@ -13,6 +14,7 @@ class SignupScreen extends StatefulWidget {
 }
 
 class _SignupScreenState extends State<SignupScreen> {
+
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
@@ -22,6 +24,7 @@ class _SignupScreenState extends State<SignupScreen> {
 
   bool _loading = false;
   bool _obscurePassword = true;
+  bool isLoggedIn = false;
 
   Future<void> _signup() async {
     setState(() => _loading = true);
@@ -49,9 +52,11 @@ class _SignupScreenState extends State<SignupScreen> {
           "createdAt": FieldValue.serverTimestamp(),
         });
       }
+      final prefs = await SharedPreferences.getInstance();
+  await prefs.setBool('isLoggedIn', true);
       Navigator.push(
         context,
-        MaterialPageRoute(builder: (context) => const Navigation()),
+        MaterialPageRoute(builder: (context) => const Navigation(isLoggedIn: true)),
       );
       ScaffoldMessenger.of(
         context,

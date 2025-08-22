@@ -1,3 +1,5 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 class GoalPage extends StatefulWidget {
@@ -14,6 +16,25 @@ class _GoalPageState extends State<GoalPage> {
   final List<Map<String, dynamic>> goals = [];
 
   final List<String> priorities = ['Must', 'Need', 'Want'];
+  @override
+  void initState() {
+    super.initState();
+    fetchBalance();
+  }
+
+  Future<void> fetchBalance() async {
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+    if (uid == null) return;
+
+    final snapshot =
+        await FirebaseFirestore.instance.collection("users").doc(uid).get();
+
+    if (snapshot.exists && snapshot.data()!.containsKey("balance")) {
+      setState(() {
+        totalBalance = snapshot["balance"] * 1.0; // ensure it's double
+      });
+    }
+  }
 
   void _addGoal() {
     String category = '';

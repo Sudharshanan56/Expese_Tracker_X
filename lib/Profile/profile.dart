@@ -1,7 +1,208 @@
+// import 'package:cloud_firestore/cloud_firestore.dart';
+// import 'package:expense_tracker_x/Authentication/signin.dart';
+// import 'package:firebase_auth/firebase_auth.dart';
+// import 'package:flutter/material.dart';
+
+// class ProfileScreen extends StatefulWidget {
+//   const ProfileScreen({super.key});
+
+//   @override
+//   State<ProfileScreen> createState() => _ProfileScreenState();
+// }
+
+// class _ProfileScreenState extends State<ProfileScreen> {
+//   bool _isDarkMode = false;
+//   bool _notificationsEnabled = true;
+//   static final FirebaseAuth _auth = FirebaseAuth.instance;
+//   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+//   final TextEditingController _numberController = TextEditingController();
+
+//   User? get user => _auth.currentUser; // ✅ single source of truth
+
+//   // Save balance to Firestore
+//   Future<void> saveBalance() async {
+//     if (_numberController.text.isEmpty) return;
+
+//     final uid = user?.uid;
+//     if (uid == null) {
+//       ScaffoldMessenger.of(
+//         context,
+//       ).showSnackBar(const SnackBar(content: Text("No user logged in")));
+//       return;
+//     }
+
+//     int number = int.parse(_numberController.text);
+
+//     // ✅ Increment instead of replacing
+//     await _firestore.collection("users").doc(uid).set({
+//       "balance": FieldValue.increment(number),
+//     }, SetOptions(merge: true));
+
+//     ScaffoldMessenger.of(
+//       context,
+//     ).showSnackBar(SnackBar(content: Text("Added ₹$number to balance!")));
+//     _numberController.clear();
+//   }
+
+//   // Logout
+//   void logout() async {
+//     await _auth.signOut();
+//     if (mounted) {
+//       Navigator.pushReplacement(
+//         context,
+//         MaterialPageRoute(builder: (context) => const SigninScreen()),
+//       );
+//     }
+//   }
+
+//   @override
+//   Widget build(BuildContext context) {
+//     final displayName = user?.displayName ?? 'Anonymous User';
+//     final email = user?.email ?? 'No email';
+//     final uid = user?.uid;
+
+//     return Scaffold(
+//       appBar: AppBar(
+//         title: const Text('Profile'),
+//         backgroundColor: Colors.blue,
+//       ),
+//       body: SingleChildScrollView(
+//         padding: const EdgeInsets.all(16),
+//         child: Column(
+//           children: [
+//             // Profile picture and info
+//             CircleAvatar(
+//               radius: 50,
+//               backgroundImage: NetworkImage('https://i.pravatar.cc/150?img=3'),
+//             ),
+//             const SizedBox(height: 12),
+//             Text(
+//               displayName,
+//               style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+//             ),
+//             const SizedBox(height: 4),
+//             Text(
+//               email,
+//               style: const TextStyle(color: Colors.grey, fontSize: 16),
+//             ),
+//             const SizedBox(height: 24),
+
+//             // Balance input
+//             TextField(
+//               controller: _numberController,
+//               decoration: const InputDecoration(
+//                 labelText: "Enter Balance",
+//                 border: OutlineInputBorder(),
+//               ),
+//               keyboardType: TextInputType.number,
+//             ),
+//             const SizedBox(height: 12),
+//             ElevatedButton(
+//               onPressed: saveBalance,
+//               child: const Text("Save Balance"),
+//             ),
+//             const SizedBox(height: 20),
+
+//             // Show balance from Firestore
+//             if (uid != null)
+//               StreamBuilder<DocumentSnapshot>(
+//                 stream: _firestore.collection("users").doc(uid).snapshots(),
+//                 builder: (context, snapshot) {
+//                   if (snapshot.connectionState == ConnectionState.waiting) {
+//                     return const CircularProgressIndicator();
+//                   }
+//                   if (!snapshot.hasData || !snapshot.data!.exists) {
+//                     return const Text("No balance saved yet.");
+//                   }
+//                   final data = snapshot.data!.data() as Map<String, dynamic>;
+//                   final balance = (data["balance"] ?? 0) + 0;
+
+//                   return Text(
+//                     "Your Balance: ₹$balance",
+//                     style: const TextStyle(
+//                       fontSize: 20,
+//                       fontWeight: FontWeight.bold,
+//                     ),
+//                   );
+//                 },
+//               ),
+
+//             const Divider(height: 32),
+
+//             // Dark Mode
+//             SwitchListTile(
+//               title: const Text('Dark Mode'),
+//               value: _isDarkMode,
+//               onChanged: (bool value) {
+//                 setState(() {
+//                   _isDarkMode = value;
+//                 });
+//               },
+//               secondary: const Icon(Icons.brightness_6),
+//             ),
+
+//             // Notifications
+//             SwitchListTile(
+//               title: const Text('Enable Notifications'),
+//               value: _notificationsEnabled,
+//               onChanged: (bool value) {
+//                 setState(() {
+//                   _notificationsEnabled = value;
+//                 });
+//               },
+//               secondary: const Icon(Icons.notifications),
+//             ),
+
+//             const Divider(height: 32),
+
+//             // Logout
+//             SizedBox(
+//               width: double.infinity,
+//               child: ElevatedButton.icon(
+//                 onPressed: () {
+//                   showDialog(
+//                     context: context,
+//                     builder:
+//                         (context) => AlertDialog(
+//                           title: const Text('Logout'),
+//                           content: const Text(
+//                             'Are you sure you want to logout?',
+//                           ),
+//                           actions: [
+//                             TextButton(
+//                               onPressed: () => Navigator.pop(context),
+//                               child: const Text('Cancel'),
+//                             ),
+//                             TextButton(
+//                               onPressed: () async {
+//                                 Navigator.pop(context);
+//                                 logout();
+//                               },
+//                               child: const Text('Logout'),
+//                             ),
+//                           ],
+//                         ),
+//                   );
+//                 },
+//                 icon: const Icon(Icons.exit_to_app),
+//                 label: const Text('Logout'),
+//                 style: ElevatedButton.styleFrom(
+//                   backgroundColor: Colors.red,
+//                   padding: const EdgeInsets.symmetric(vertical: 14),
+//                 ),
+//               ),
+//             ),
+//           ],
+//         ),
+//       ),
+//     );
+//   }
+// }
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:expense_tracker_x/Authentication/signin.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -17,23 +218,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final TextEditingController _numberController = TextEditingController();
 
-  User? get user => _auth.currentUser; // ✅ single source of truth
+  User? get user => _auth.currentUser;
 
-  // Save balance to Firestore
+  // Save balance
   Future<void> saveBalance() async {
     if (_numberController.text.isEmpty) return;
 
     final uid = user?.uid;
-    if (uid == null) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text("No user logged in")));
-      return;
-    }
+    if (uid == null) return;
 
     int number = int.parse(_numberController.text);
 
-    // ✅ Increment instead of replacing
     await _firestore.collection("users").doc(uid).set({
       "balance": FieldValue.increment(number),
     }, SetOptions(merge: true));
@@ -47,12 +242,30 @@ class _ProfileScreenState extends State<ProfileScreen> {
   // Logout
   void logout() async {
     await _auth.signOut();
+    final prefs = await SharedPreferences.getInstance();
+  await prefs.clear();
     if (mounted) {
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (context) => const SigninScreen()),
       );
     }
+  }
+
+  Widget _buildInfoRow(String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 6),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            "$label: ",
+            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+          ),
+          Expanded(child: Text(value, style: const TextStyle(fontSize: 16))),
+        ],
+      ),
+    );
   }
 
   @override
@@ -63,132 +276,126 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Profile'),
+        automaticallyImplyLeading: false,
+        title: const Text("Profile"),
         backgroundColor: Colors.blue,
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(20),
         child: Column(
           children: [
-            // Profile picture and info
-            CircleAvatar(
-              radius: 50,
-              backgroundImage: NetworkImage('https://i.pravatar.cc/150?img=3'),
+            // Profile avatar
+            Center(
+              child: CircleAvatar(
+                radius: 50,
+                backgroundImage: NetworkImage(
+                  'https://i.pravatar.cc/150?img=3',
+                ),
+              ),
             ),
-            const SizedBox(height: 12),
-            Text(
-              displayName,
-              style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+            const SizedBox(height: 20),
+
+            // User Info
+            Card(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+              elevation: 2,
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _buildInfoRow("Name", displayName),
+                    _buildInfoRow("Email", email),
+
+                    if (uid != null)
+                      StreamBuilder<DocumentSnapshot>(
+                        stream:
+                            _firestore.collection("users").doc(uid).snapshots(),
+                        builder: (context, snapshot) {
+                          if (!snapshot.hasData || !snapshot.data!.exists) {
+                            return _buildInfoRow("Balance", "₹0");
+                          }
+                          final data =
+                              snapshot.data!.data() as Map<String, dynamic>;
+                          final balance = (data["balance"] ?? 0) as int;
+                          return _buildInfoRow("Balance", "₹$balance");
+                        },
+                      ),
+                  ],
+                ),
+              ),
             ),
-            const SizedBox(height: 4),
-            Text(
-              email,
-              style: const TextStyle(color: Colors.grey, fontSize: 16),
-            ),
-            const SizedBox(height: 24),
+
+            const SizedBox(height: 20),
 
             // Balance input
             TextField(
               controller: _numberController,
-              decoration: const InputDecoration(
-                labelText: "Enter Balance",
-                border: OutlineInputBorder(),
+              decoration: InputDecoration(
+                labelText: "Add to Balance",
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                prefixIcon: const Icon(Icons.currency_rupee),
               ),
               keyboardType: TextInputType.number,
             ),
             const SizedBox(height: 12),
-            ElevatedButton(
+            ElevatedButton.icon(
               onPressed: saveBalance,
-              child: const Text("Save Balance"),
-            ),
-            const SizedBox(height: 20),
-
-            // Show balance from Firestore
-            if (uid != null)
-              StreamBuilder<DocumentSnapshot>(
-                stream: _firestore.collection("users").doc(uid).snapshots(),
-                builder: (context, snapshot) {
-                  if (snapshot.connectionState == ConnectionState.waiting) {
-                    return const CircularProgressIndicator();
-                  }
-                  if (!snapshot.hasData || !snapshot.data!.exists) {
-                    return const Text("No balance saved yet.");
-                  }
-                  final data = snapshot.data!.data() as Map<String, dynamic>;
-                  final balance = (data["balance"] ?? 0) + 0;
-
-                  return Text(
-                    "Your Balance: ₹$balance",
-                    style: const TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  );
-                },
+              icon: const Icon(Icons.add),
+              label: const Text(
+                "Save Balance",
+                style: TextStyle(color: Colors.white),
               ),
-
-            const Divider(height: 32),
-
-            // Dark Mode
-            SwitchListTile(
-              title: const Text('Dark Mode'),
-              value: _isDarkMode,
-              onChanged: (bool value) {
-                setState(() {
-                  _isDarkMode = value;
-                });
-              },
-              secondary: const Icon(Icons.brightness_6),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.green,
+                minimumSize: const Size(double.infinity, 50),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
             ),
 
-            // Notifications
-            SwitchListTile(
-              title: const Text('Enable Notifications'),
-              value: _notificationsEnabled,
-              onChanged: (bool value) {
-                setState(() {
-                  _notificationsEnabled = value;
-                });
-              },
-              secondary: const Icon(Icons.notifications),
-            ),
+            const SizedBox(height: 30),
 
-            const Divider(height: 32),
-
-            // Logout
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton.icon(
-                onPressed: () {
-                  showDialog(
-                    context: context,
-                    builder:
-                        (context) => AlertDialog(
-                          title: const Text('Logout'),
-                          content: const Text(
-                            'Are you sure you want to logout?',
-                          ),
-                          actions: [
-                            TextButton(
-                              onPressed: () => Navigator.pop(context),
-                              child: const Text('Cancel'),
-                            ),
-                            TextButton(
-                              onPressed: () async {
-                                Navigator.pop(context);
-                                logout();
-                              },
-                              child: const Text('Logout'),
-                            ),
-                          ],
+            // Logout button
+            ElevatedButton.icon(
+              onPressed: () {
+                showDialog(
+                  context: context,
+                  builder:
+                      (context) => AlertDialog(
+                        title: const Text(
+                          'Logout',
+                          style: TextStyle(color: Colors.white),
                         ),
-                  );
-                },
-                icon: const Icon(Icons.exit_to_app),
-                label: const Text('Logout'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.red,
-                  padding: const EdgeInsets.symmetric(vertical: 14),
+                        content: const Text('Are you sure you want to logout?'),
+                        actions: [
+                          TextButton(
+                            onPressed: () => Navigator.pop(context),
+                            child: const Text('Cancel'),
+                          ),
+                          TextButton(
+                            onPressed: () {
+                              Navigator.pop(context);
+                              logout();
+                            },
+                            child: const Text('Logout'),
+                          ),
+                        ],
+                      ),
+                );
+              },
+              icon: const Icon(Icons.exit_to_app),
+              label: const Text('Logout'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.red,
+                minimumSize: const Size(double.infinity, 50),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
                 ),
               ),
             ),

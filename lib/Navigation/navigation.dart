@@ -6,7 +6,9 @@ import 'package:flutter/material.dart';
 
 // Main Screen with Navigation Bar
 class Navigation extends StatefulWidget {
-  const Navigation({super.key});
+  const Navigation({Key? key, required this.isLoggedIn}) : super(key: key);
+
+  final bool isLoggedIn;
 
   @override
   State<Navigation> createState() => _NavigationState();
@@ -27,6 +29,7 @@ class _NavigationState extends State<Navigation> {
     return Scaffold(
       body: _screens[_currentIndex],
       bottomNavigationBar: BottomNavigationBar(
+        backgroundColor: Colors.white,
         currentIndex: _currentIndex,
         selectedItemColor: Colors.blue,
         unselectedItemColor: Colors.grey,
