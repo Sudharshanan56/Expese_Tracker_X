@@ -14,7 +14,6 @@ class SignupScreen extends StatefulWidget {
 }
 
 class _SignupScreenState extends State<SignupScreen> {
-
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
@@ -53,10 +52,12 @@ class _SignupScreenState extends State<SignupScreen> {
         });
       }
       final prefs = await SharedPreferences.getInstance();
-  await prefs.setBool('isLoggedIn', true);
+      await prefs.setBool('isLoggedIn', true);
       Navigator.push(
         context,
-        MaterialPageRoute(builder: (context) => const Navigation(isLoggedIn: true)),
+        MaterialPageRoute(
+          builder: (context) => const Navigation(isLoggedIn: true),
+        ),
       );
       ScaffoldMessenger.of(
         context,
@@ -225,7 +226,7 @@ class _SignupScreenState extends State<SignupScreen> {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => const SignupScreen(),
+                          builder: (context) => const SigninScreen(),
                         ),
                       );
                     },
@@ -233,21 +234,11 @@ class _SignupScreenState extends State<SignupScreen> {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         const Text("Already have an account? "),
-                        GestureDetector(
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => const SigninScreen(),
-                              ),
-                            );
-                          },
-                          child: const Text(
-                            "Sign In",
-                            style: TextStyle(
-                              color: Color(0xFF2575FC),
-                              fontWeight: FontWeight.bold,
-                            ),
+                        const Text(
+                          "Sign In",
+                          style: TextStyle(
+                            color: Color(0xFF2575FC),
+                            fontWeight: FontWeight.bold,
                           ),
                         ),
                       ],

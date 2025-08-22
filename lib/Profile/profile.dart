@@ -198,10 +198,14 @@
 //     );
 //   }
 // }
+import 'dart:io';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:expense_tracker_x/Authentication/signin.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class ProfileScreen extends StatefulWidget {
@@ -239,11 +243,66 @@ class _ProfileScreenState extends State<ProfileScreen> {
     _numberController.clear();
   }
 
+  File? _image;
+  final picker = ImagePicker();
+  bool _uploading = false;
+
+  // Pick image from gallery
+  Future<void> pickImage() async {
+    final pickedFile = await picker.pickImage(source: ImageSource.gallery);
+
+    if (pickedFile != null) {
+      setState(() {
+        _image = File(pickedFile.path);
+      });
+    }
+  }
+
+  // Upload to Firebase Storage and save URL in Firestore
+  Future<void> uploadImage() async {
+    if (_image == null) return;
+
+    setState(() => _uploading = true);
+
+    try {
+      // current user uid
+      final uid = FirebaseAuth.instance.currentUser!.uid;
+
+      // Firebase Storage reference
+      final ref = FirebaseStorage.instance
+          .ref()
+          .child("profile_pics")
+          .child("$uid.jpg");
+
+      // Upload file
+      await ref.putFile(_image!);
+
+      // Get download URL
+      final url = await ref.getDownloadURL();
+
+      // Save URL in Firestore
+      await FirebaseFirestore.instance.collection("users").doc(uid).set(
+        {"profileImage": url},
+        SetOptions(merge: true), // merge keeps old fields
+      );
+
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("Image uploaded successfully ✅")));
+    } catch (e) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("Error: $e")));
+    } finally {
+      setState(() => _uploading = false);
+    }
+  }
+
   // Logout
   void logout() async {
     await _auth.signOut();
     final prefs = await SharedPreferences.getInstance();
-  await prefs.clear();
+    await prefs.clear();
     if (mounted) {
       Navigator.pushReplacement(
         context,
@@ -285,14 +344,31 @@ class _ProfileScreenState extends State<ProfileScreen> {
         child: Column(
           children: [
             // Profile avatar
-            Center(
-              child: CircleAvatar(
-                radius: 50,
-                backgroundImage: NetworkImage(
-                  'https://i.pravatar.cc/150?img=3',
-                ),
-              ),
-            ),
+            GestureDetector(
+  onTap: () async {
+    await pickImage(); // let user pick an image first
+    if (_image != null) {
+      await uploadImage(); // then upload if image is selected
+    }
+  },
+  child: Center(
+    child: _image != null
+      ? CircleAvatar(
+          radius: 60,
+          backgroundImage: FileImage(_image!),
+        )
+      : CircleAvatar(
+          radius: 60,
+          backgroundColor: Colors.grey,
+          child: Icon(
+            Icons.person,
+            size: 60,
+            color: Colors.white,
+          ),
+        ),
+  ),
+),
+
             const SizedBox(height: 20),
 
             // User Info

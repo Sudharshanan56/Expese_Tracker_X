@@ -1,3 +1,4 @@
+import 'package:expense_tracker_x/Authentication/ForgotPassword.dart';
 import 'package:expense_tracker_x/Authentication/signup.dart';
 import 'package:expense_tracker_x/Navigation/navigation.dart';
 import 'package:flutter/material.dart';
@@ -183,23 +184,20 @@ class _SigninScreenState extends State<SigninScreen> {
                     onTap: () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (context) => const SignupScreen()),
+                        MaterialPageRoute(
+                          builder: (context) => const SignupScreen(),
+                        ),
                       );
                     },
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         const Text("Don’t have an account? "),
-                        GestureDetector(
-                          onTap: () {
-                            // TODO: Navigate to Signup page
-                          },
-                          child: const Text(
-                            "Sign Up",
-                            style: TextStyle(
-                              color: Color(0xFF2575FC),
-                              fontWeight: FontWeight.bold,
-                            ),
+                        const Text(
+                          "Sign Up",
+                          style: TextStyle(
+                            color: Color(0xFF2575FC),
+                            fontWeight: FontWeight.bold,
                           ),
                         ),
                       ],
@@ -211,7 +209,12 @@ class _SigninScreenState extends State<SigninScreen> {
                   // Forgot Password
                   GestureDetector(
                     onTap: () {
-                      // TODO: Navigate to Forgot Password Page
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const ForgotPasswordScreen(),
+                        ),
+                      );
                     },
                     child: const Text(
                       "Forgot Password?",

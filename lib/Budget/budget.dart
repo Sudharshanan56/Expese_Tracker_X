@@ -49,7 +49,8 @@ class _BudgetScreenState extends State<BudgetScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(automaticallyImplyLeading: false,
+      appBar: AppBar(
+        automaticallyImplyLeading: false,
         title: const Text("Budgets"),
         backgroundColor: Colors.green,
       ),
@@ -67,11 +68,12 @@ class _BudgetScreenState extends State<BudgetScreen> {
             // Fetch budgets from Firestore
             Expanded(
               child: StreamBuilder<QuerySnapshot>(
-                stream: FirebaseFirestore.instance
-                    .collection("users")
-                    .doc(uid)
-                    .collection("budgets")
-                    .snapshots(),
+                stream:
+                    FirebaseFirestore.instance
+                        .collection("users")
+                        .doc(uid)
+                        .collection("budgets")
+                        .snapshots(),
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.waiting) {
                     return const Center(child: CircularProgressIndicator());
@@ -91,54 +93,108 @@ class _BudgetScreenState extends State<BudgetScreen> {
                       double limit = budget["limit"] * 1.0;
                       double percent = (expense / limit).clamp(0.0, 1.0);
 
-                      return Card(
-                        margin: const EdgeInsets.symmetric(vertical: 8),
-                        elevation: 2,
-                        child: Padding(
-                          padding: const EdgeInsets.all(12),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Row(
-                                    children: [
-                                      Icon(getCategoryIcon(category),
-                                          color: Colors.blue),
-                                      const SizedBox(width: 8),
-                                      Text(
-                                        category,
-                                        style: const TextStyle(
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.bold,
+                      return Dismissible(
+                        key: Key(budget.id),
+                        direction: DismissDirection.endToStart,
+                        background: Container(
+                          color: Colors.red,
+                          alignment: Alignment.centerRight,
+                          padding: const EdgeInsets.symmetric(horizontal: 20),
+                          child: const Icon(Icons.delete, color: Colors.white),
+                        ),
+                        onDismissed: (_) async {
+                          await FirebaseFirestore.instance
+                              .collection("users")
+                              .doc(uid)
+                              .collection("budgets")
+                              .doc(budget.id)
+                              .delete();
+
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text("Budget '${budget.id}' deleted"),
+                            ),
+                          );
+                        },
+                        child: Card(
+                          margin: const EdgeInsets.symmetric(vertical: 8),
+                          elevation: 2,
+                          child: Padding(
+                            padding: const EdgeInsets.all(12),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Row(
+                                      children: [
+                                        Icon(
+                                          getCategoryIcon(category),
+                                          color: Colors.blue,
                                         ),
-                                      ),
-                                    ],
-                                  ),
-                                  Text(
-                                    getStatusText(expense, limit),
-                                    style: TextStyle(
-                                      fontSize: 14,
-                                      color: getBarColor(expense, limit),
+                                        const SizedBox(width: 8),
+                                        Text(
+                                          category,
+                                          style: const TextStyle(
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    Row(
+                                      children: [
+                                        Text(
+                                          getStatusText(expense, limit),
+                                          style: TextStyle(
+                                            fontSize: 14,
+                                            color: getBarColor(expense, limit),
+                                          ),
+                                        ),
+                                        IconButton(
+                                          icon: const Icon(
+                                            Icons.delete,
+                                            color: Colors.red,
+                                          ),
+                                          onPressed: () async {
+                                            await FirebaseFirestore.instance
+                                                .collection("users")
+                                                .doc(uid)
+                                                .collection("budgets")
+                                                .doc(budget.id)
+                                                .delete();
+
+                                            ScaffoldMessenger.of(
+                                              context,
+                                            ).showSnackBar(
+                                              SnackBar(
+                                                content: Text(
+                                                  "Budget '${budget.id}' deleted",
+                                                ),
+                                              ),
+                                            );
+                                          },
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 8),
+                                ClipRRect(
+                                  borderRadius: BorderRadius.circular(10),
+                                  child: LinearProgressIndicator(
+                                    value: percent,
+                                    minHeight: 12,
+                                    backgroundColor: Colors.grey.shade300,
+                                    valueColor: AlwaysStoppedAnimation<Color>(
+                                      getBarColor(expense, limit),
                                     ),
                                   ),
-                                ],
-                              ),
-                              const SizedBox(height: 8),
-                              ClipRRect(
-                                borderRadius: BorderRadius.circular(10),
-                                child: LinearProgressIndicator(
-                                  value: percent,
-                                  minHeight: 12,
-                                  backgroundColor: Colors.grey.shade300,
-                                  valueColor: AlwaysStoppedAnimation<Color>(
-                                    getBarColor(expense, limit),
-                                  ),
                                 ),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
                         ),
                       );
@@ -155,9 +211,7 @@ class _BudgetScreenState extends State<BudgetScreen> {
                 onPressed: () async {
                   final newBudget = await Navigator.push(
                     context,
-                    MaterialPageRoute(
-                      builder: (_) => const SetBudgetScreen(),
-                    ),
+                    MaterialPageRoute(builder: (_) => const SetBudgetScreen()),
                   );
 
                   if (newBudget != null) {
@@ -167,9 +221,9 @@ class _BudgetScreenState extends State<BudgetScreen> {
                         .collection("budgets")
                         .doc(newBudget["title"]) // use category name as doc id
                         .set({
-                      "limit": newBudget["limit"],
-                      "expense": 0, // default
-                    });
+                          "limit": newBudget["limit"],
+                          "expense": 0, // default
+                        });
                   }
                 },
                 style: ElevatedButton.styleFrom(
