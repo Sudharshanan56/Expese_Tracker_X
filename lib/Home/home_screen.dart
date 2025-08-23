@@ -58,35 +58,39 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-  Future<void> addTransaction(String category, int amount) async {
-    // 1️⃣ Save transaction in "transactions"
-    await _firestore
-        .collection("users")
-        .doc(uid)
-        .collection("transactions")
-        .add({
-          "category": category,
-          "amount": amount,
-          "timestamp": FieldValue.serverTimestamp(),
-        });
+ Future<void> addTransaction(String category, int amount, {DateTime? customDate}) async {
+  // Save transaction in "transactions"
+  await _firestore
+      .collection("users")
+      .doc(uid)
+      .collection("transactions")
+      .add({
+        "category": category,
+        "amount": amount,
+        "timestamp": customDate != null
+            ? Timestamp.fromDate(customDate)
+            : FieldValue.serverTimestamp(),
+      });
 
-    // 2️⃣ Update budget if exists
-    DocumentReference budgetRef = _firestore
-        .collection("users")
-        .doc(uid)
-        .collection("budgets")
-        .doc(category);
+  // Update budget if exists
+  DocumentReference budgetRef = _firestore
+      .collection("users")
+      .doc(uid)
+      .collection("budgets")
+      .doc(category);
 
-    DocumentSnapshot budgetSnap = await budgetRef.get();
-
-    if (budgetSnap.exists) {
-      await budgetRef.update({"expense": FieldValue.increment(amount)});
-    }
-    DocumentReference userRef = _firestore.collection("users").doc(uid);
-    await userRef.update({
-      "balance": FieldValue.increment(-amount), // 👈 subtract amount
-    });
+  DocumentSnapshot budgetSnap = await budgetRef.get();
+  if (budgetSnap.exists) {
+    await budgetRef.update({"expense": FieldValue.increment(amount)});
   }
+
+  // ✅ Subtract from balance
+  DocumentReference userRef = _firestore.collection("users").doc(uid);
+  await userRef.update({
+    "balance": FieldValue.increment(-amount),
+  });
+}
+
 
   Future<void> _showUpdateTransactionDialog(
     String docId,
@@ -331,50 +335,43 @@ class _HomeScreenState extends State<HomeScreen> {
             child: const Text("Cancel"),
           ),
           ElevatedButton(
-            onPressed: () async {
-              final user = _auth.currentUser;
-              if (user == null) return;
+  onPressed: () async {
+    final user = _auth.currentUser;
+    if (user == null) return;
 
-              String finalCategory = selectedCategory ?? "";
-              if (finalCategory == "Other") {
-                finalCategory = customCategoryController.text.trim();
-              }
+    String finalCategory = selectedCategory ?? "";
+    if (finalCategory == "Other") {
+      finalCategory = customCategoryController.text.trim();
+    }
 
-              int amount = int.tryParse(amountController.text.trim()) ?? 0;
+    int amount = int.tryParse(amountController.text.trim()) ?? 0;
 
-              if (finalCategory.isEmpty || amount <= 0) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text("Please enter valid details")),
-                );
-                return;
-              }
+    if (finalCategory.isEmpty || amount <= 0) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Please enter valid details")),
+      );
+      return;
+    }
 
-              // ✅ Pass selectedDate instead of serverTimestamp
-              await _firestore
-                  .collection("users")
-                  .doc(uid)
-                  .collection("transactions")
-                  .add({
-                "category": finalCategory,
-                "amount": amount,
-                "timestamp": selectedDate ?? DateTime.now(),
-              });
+    // ✅ Call addTransaction instead of direct .add()
+    await addTransaction(finalCategory, amount, customDate: selectedDate);
 
-              Navigator.pop(context);
-              setState(() {
-                selectedCategory = null;
-                customCategoryController.clear();
-                amountController.clear();
-              });
+    Navigator.pop(context);
+    setState(() {
+      selectedCategory = null;
+      customCategoryController.clear();
+      amountController.clear();
+    });
 
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text("Transaction added successfully"),
-                ),
-              );
-            },
-            child: const Text("Save"),
-          ),
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text("Transaction added successfully"),
+      ),
+    );
+  },
+  child: const Text("Save"),
+),
+
         ],
       );
     },
