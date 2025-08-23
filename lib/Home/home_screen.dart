@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:expense_tracker_x/Authentication/phone.dart';
 import 'package:expense_tracker_x/Calender/calender.dart';
 import 'package:expense_tracker_x/Goal/goal.dart';
+import 'package:expense_tracker_x/Notification/notification.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
@@ -463,12 +464,22 @@ class _HomeScreenState extends State<HomeScreen> {
                 },
               ),
               ListTile(
-                leading: Icon(Icons.calendar_month),
+                leading: Icon(Icons.phone),
                 title: const Text('Phone'),
                 onTap: () {
                   Navigator.push(
                     context,
                     MaterialPageRoute(builder: (context) => PhoneAuthScreen()),
+                  );
+                },
+              ),
+              ListTile(
+                leading: Icon(Icons.notifications),
+                title: const Text('Notifications'),
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => NotificationScreen()),
                   );
                 },
               ),
